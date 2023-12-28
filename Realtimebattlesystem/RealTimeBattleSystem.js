@@ -5,7 +5,7 @@
  *
  * @help
  * Este plugin implementa un sistema de batalla en tiempo real básico.
- * VERSION DE PRUEBA ALPHA 0.2
+ * VERSION DE PRUEBA ALPHA 0.21
  */
 
 (function() {
@@ -84,11 +84,15 @@
     }
 	};
 	
-	// Almacenar la posición inicial del enemigo
+	// Sobrescribir la inicialización de miembros del evento
+	const originalGameEventInitMembers = Game_Event.prototype.initMembers;
 	Game_Event.prototype.initMembers = function() {
-    Game_Character.prototype.initMembers.call(this);
-    this._startX = this.x;
-    this._startY = this.y;
+    originalGameEventInitMembers.call(this);
+    this._health = 100; // Valor predeterminado de la salud del enemigo
+    this._startX = this.x; // Almacenar la posición inicial X
+    this._startY = this.y; // Almacenar la posición inicial Y
+};
+
 };
 	
 	// Verificar si el enemigo está fuera de su área original
@@ -100,10 +104,10 @@
 
 	// Moverse aleatoriamente dentro del rango definido
 	Game_Event.prototype.moveRandomlyInArea = function() {
-		 const dx = Math.floor(Math.random() * 9) - 4; // Rango de -4 a 4
-			const dy = Math.floor(Math.random() * 9) - 4; // Rango de -4 a 4
-			const targetX = this._startX + dx;
-			const targetY = this._startY + dy;
+    const dx = Math.floor(Math.random() * 9) - 4; // Rango de -4 a 4
+    const dy = Math.floor(Math.random() * 9) - 4; // Rango de -4 a 4
+    const targetX = this._startX + dx;
+    const targetY = this._startY + dy;
 
     if ($gameMap.isValid(targetX, targetY)) {
         this.moveStraight(this.findDirectionTo(targetX, targetY));
@@ -112,7 +116,7 @@
 
 	// Volver a la zona original
 	Game_Event.prototype.volverAZonaOriginal = function() {
-		if (this.x !== this._startX || this.y !== this._startY) {
+    if (this.x !== this._startX || this.y !== this._startY) {
         this.moveStraight(this.findDirectionTo(this._startX, this._startY));
     }
 	};
