@@ -5,7 +5,7 @@
  *
  * @help
  * Este plugin implementa un sistema de batalla en tiempo real básico.
- * VERSION DE PRUEBA ALPHA 0.25
+ * VERSION DE PRUEBA ALPHA 0.26
  *
  * Los eventos pueden ser marcados como "enemigo" o "aliado" mediante comentarios.
  */
@@ -22,10 +22,10 @@
     // Sobrescribir la inicialización de miembros del evento
     Game_Event.prototype.initMembers = function() {
         originalGameEventInitMembers.call(this);
-        this._health = 100; // Valor predeterminado de la salud del enemigo
-        this._startX = this.x; // Almacenar la posición inicial X
-        this._startY = this.y; // Almacenar la posición inicial Y
-        this._eventTypeChecked = false; // Indica si el tipo de evento ya ha sido verificado
+        this._health = 100;
+        this._startX = this.x;
+        this._startY = this.y;
+        this._eventTypeChecked = false;
     };
 
     // Guardar la referencia original de update de Game_Event
@@ -35,10 +35,9 @@
     Game_Event.prototype.update = function() {
         originalGameEventUpdate.call(this);
 
-        // Verificar el tipo de evento una vez que esté disponible
         if (!this._eventTypeChecked) {
             this._eventType = this.getEventType();
-            this._eventTypeChecked = true; // Marcar como verificado
+            this._eventTypeChecked = true;
         }
 
         if (this._eventType === "enemigo") {
@@ -66,21 +65,6 @@
             }
         }
         return null;
-    };
-
-
-    // Guardar la referencia original de update de Game_Event
-    const originalGameEventUpdate = Game_Event.prototype.update;
-
-    // Sobrescribir la actualización del evento
-    Game_Event.prototype.update = function() {
-        originalGameEventUpdate.call(this);
-
-        if (this._eventType === "enemigo") {
-            this.verificarDistanciaYActuar();
-        } else if (this._eventType === "aliado") {
-            this.actualizarAliado();
-        }
     };
 
     // Verificar la distancia y realizar una acción para enemigos
@@ -124,24 +108,23 @@
     };
 
     // Moverse aleatoriamente dentro del rango definido
-	Game_Event.prototype.moveRandomlyInArea = function() {
-    const dx = Math.floor(Math.random() * 9) - 4; // Rango de -4 a 4
-    const dy = Math.floor(Math.random() * 9) - 4; // Rango de -4 a 4
-    const targetX = this._startX + dx;
-    const targetY = this._startY + dy;
+    Game_Event.prototype.moveRandomlyInArea = function() {
+        const dx = Math.floor(Math.random() * 9) - 4;
+        const dy = Math.floor(Math.random() * 9) - 4;
+        const targetX = this._startX + dx;
+        const targetY = this._startY + dy;
 
-    if ($gameMap.isValid(targetX, targetY)) {
-        this.moveStraight(this.findDirectionTo(targetX, targetY));
-    }
-};
+        if ($gameMap.isValid(targetX, targetY)) {
+            this.moveStraight(this.findDirectionTo(targetX, targetY));
+        }
+    };
 
-	// Volver a la zona original
-	Game_Event.prototype.volverAZonaOriginal = function() {
-		if (this.x !== this._startX || this.y !== this._startY) {
-			this.moveStraight(this.findDirectionTo(this._startX, this._startY));
-		}
-	};
-
+    // Volver a la zona original
+    Game_Event.prototype.volverAZonaOriginal = function() {
+        if (this.x !== this._startX || this.y !== this._startY) {
+            this.moveStraight(this.findDirectionTo(this._startX, this._startY));
+        }
+    };
 
     // Función para actualizar el comportamiento del aliado
     Game_Event.prototype.actualizarAliado = function() {
@@ -183,5 +166,4 @@
             }
         }
     };
-
 })();
