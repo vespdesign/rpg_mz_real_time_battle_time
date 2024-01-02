@@ -5,21 +5,19 @@
  *
  * @help
  * Este plugin implementa un sistema de batalla en tiempo real básico.
- * VERSION DE PRUEBA ALPHA 0.26
+ * VERSION DE PRUEBA ALPHA 0.261
  *
  * Los eventos pueden ser marcados como "enemigo" o "aliado" mediante comentarios.
  */
 
 (function() {
     // Constantes para la configuración del sistema
-    const DISTANCIA_DE_ATAQUE = 1;   // Distancia para iniciar el ataque
-    const DISTANCIA_DE_PERSECUCION = 5;  // Distancia para que el enemigo persiga al jugador
-    const ENEMY_DAMAGE = 10; // Cantidad de daño que el enemigo hace al jugador
-
-    // Guardar la referencia original de initMembers de Game_Event
-    const originalGameEventInitMembers = Game_Event.prototype.initMembers;
+    const DISTANCIA_DE_ATAQUE = 1;
+    const DISTANCIA_DE_PERSECUCION = 5;
+    const ENEMY_DAMAGE = 10;
 
     // Sobrescribir la inicialización de miembros del evento
+    const originalGameEventInitMembers = Game_Event.prototype.initMembers;
     Game_Event.prototype.initMembers = function() {
         originalGameEventInitMembers.call(this);
         this._health = 100;
@@ -28,10 +26,8 @@
         this._eventTypeChecked = false;
     };
 
-    // Guardar la referencia original de update de Game_Event
-    const originalGameEventUpdate = Game_Event.prototype.update;
-
     // Sobrescribir la actualización del evento
+    const originalGameEventUpdate = Game_Event.prototype.update;
     Game_Event.prototype.update = function() {
         originalGameEventUpdate.call(this);
 
@@ -148,6 +144,7 @@
         if (this._eventType === "aliado") {
             objetivos = $gameMap.events().filter(event => event._eventType === "enemigo");
         } else {
+            // Corrección aquí: 'y' debe ser '&&'
             objetivos = [$gamePlayer].concat($gameMap.events().filter(event => event._eventType === "enemigo" && event !== this));
         }
 
@@ -158,6 +155,7 @@
         });
 
         if (this.distanceTo(objetivoMasCercano) <= DISTANCIA_DE_ATAQUE) {
+            // Otra corrección aquí: 'y' debe ser '&&'
             if (this._eventType === "enemigo" && objetivoMasCercano === $gamePlayer) {
                 $gameActors.actor(1).setHp($gameActors.actor(1).hp - ENEMY_DAMAGE);
                 console.log("El enemigo ataca al jugador!");
