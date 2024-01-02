@@ -5,7 +5,7 @@
  *
  * @help
  * Este plugin implementa un sistema de batalla en tiempo real básico.
- * VERSION DE PRUEBA ALPHA 0.23
+ * VERSION DE PRUEBA ALPHA 0.24
  *
  * Los eventos pueden ser marcados como "enemigo" o "aliado" mediante comentarios.
  */
@@ -87,6 +87,32 @@
             this.volverAZonaOriginal();
         } else {
             this.moveRandomlyInArea();
+        }
+    };
+
+    // Verificar si el enemigo está fuera de su área original
+    Game_Event.prototype.estáFueraDeSuZona = function() {
+        const dx = Math.abs(this.x - this._startX);
+        const dy = Math.abs(this.y - this._startY);
+        return dx > 4 || dy > 4;
+    };
+
+    // Moverse aleatoriamente dentro del rango definido
+    Game_Event.prototype.moveRandomlyInArea = function() {
+        const dx = Math.floor(Math.random() * 9) - 4; // Rango de -4 a 4
+        const dy = Math.floor(Math.random() * 9) - 4; // Rango de -4 a 4
+        const targetX = this._startX + dx;
+        const targetY = this._startY + dy;
+
+        if ($gameMap.isValid(targetX, targetY)) {
+            this.moveStraight(this.findDirectionTo(targetX, targetY));
+        }
+    };
+
+    // Volver a la zona original
+    Game_Event.prototype.volverAZonaOriginal = function() {
+        if (this.x !== this._startX || this.y !== this._startY) {
+            this.moveStraight(this.findDirectionTo(this._startX, this._startY));
         }
     };
 
