@@ -5,7 +5,7 @@
  *
  * @help
  * Este plugin implementa un sistema de batalla en tiempo real básico.
- * VERSION DE PRUEBA ALPHA 0.242
+ * VERSION DE PRUEBA ALPHA 0.25
  *
  * Los eventos pueden ser marcados como "enemigo" o "aliado" mediante comentarios.
  */
@@ -25,30 +25,48 @@
         this._health = 100; // Valor predeterminado de la salud del enemigo
         this._startX = this.x; // Almacenar la posición inicial X
         this._startY = this.y; // Almacenar la posición inicial Y
-        this._eventType = this.getEventType(); // Determina el tipo de evento
+        this._eventTypeChecked = false; // Indica si el tipo de evento ya ha sido verificado
+    };
+
+    // Guardar la referencia original de update de Game_Event
+    const originalGameEventUpdate = Game_Event.prototype.update;
+
+    // Sobrescribir la actualización del evento
+    Game_Event.prototype.update = function() {
+        originalGameEventUpdate.call(this);
+
+        // Verificar el tipo de evento una vez que esté disponible
+        if (!this._eventTypeChecked) {
+            this._eventType = this.getEventType();
+            this._eventTypeChecked = true; // Marcar como verificado
+        }
+
+        if (this._eventType === "enemigo") {
+            this.verificarDistanciaYActuar();
+        } else if (this._eventType === "aliado") {
+            this.actualizarAliado();
+        }
     };
 
     // Obtener el tipo de evento (enemigo, aliado)
-	Game_Event.prototype.getEventType = function() {
-    // Comprobar si el evento está definido
-    const eventData = this.event();
-    if (!eventData) {
-        return null; // Si el evento no está definido, retorna null
-    }
+    Game_Event.prototype.getEventType = function() {
+        const eventData = this.event();
+        if (!eventData) {
+            return null;
+        }
 
-    // Iterar sobre los comandos de la página del evento
-    const list = eventData.pages[0].list; // Asumiendo que el comentario está en la primera página
-    for (const command of list) {
-        if (command.code === 108 || command.code === 408) {
-            if (command.parameters[0].includes("enemigo")) {
-                return "enemigo";
-            } else if (command.parameters[0].includes("aliado")) {
-                return "aliado";
+        const list = eventData.pages[0].list;
+        for (const command of list) {
+            if (command.code === 108 || command.code === 408) {
+                if (command.parameters[0].includes("enemigo")) {
+                    return "enemigo";
+                } else if (command.parameters[0].includes("aliado")) {
+                    return "aliado";
+                }
             }
         }
-    }
-    return null;
-};
+        return null;
+    };
 
 
     // Guardar la referencia original de update de Game_Event
