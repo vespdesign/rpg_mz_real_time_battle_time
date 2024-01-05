@@ -47,21 +47,24 @@
     };
 
     const originalGameEventUpdate = Game_Event.prototype.update;
-    Game_Event.prototype.update = function() {
-        originalGameEventUpdate.call(this);
-        if (!this._eventTypeChecked) {
-            this._eventType = this.getEventType();
-            this._eventTypeChecked = true;
+Game_Event.prototype.update = function() {
+    originalGameEventUpdate.call(this);
+    if (!this._eventTypeChecked) {
+        this._eventType = this.getEventType();
+        this._eventTypeChecked = true;
+    }
+
+    if (this._eventType === "enemigo" || this._eventType === "aliado") {
+        if (this._waitCount > 0) {
+            this._waitCount--;
+        } else {
+            this.comportamientoEvento();
+            this.combatirSiEsNecesario(); // Añadir esta línea para comprobar si necesita combatir
+            this._waitCount = TIEMPO_ESPERA;
         }
-        if (this._eventType === "enemigo" || this._eventType === "aliado") {
-            if (this._waitCount > 0) {
-                this._waitCount--;
-            } else {
-                this.comportamientoEvento();
-                this._waitCount = TIEMPO_ESPERA;
-            }
-        }
-    };
+    }
+};
+
 
     Game_Event.prototype.comportamientoEvento = function() {
         const distanciaAlJugador = $gamePlayer.distanceTo(this);
