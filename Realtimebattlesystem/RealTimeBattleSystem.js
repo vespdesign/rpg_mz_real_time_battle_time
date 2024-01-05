@@ -14,18 +14,18 @@
     const DISTANCIA_DE_ATAQUE = 0.5;
     const DISTANCIA_DE_PERSECUCION = 5;
     const ENEMY_DAMAGE = 10;
+    const TIEMPO_ESPERA = 60;
 
-    // Inicialización de los eventos
     const originalGameEventInitMembers = Game_Event.prototype.initMembers;
     Game_Event.prototype.initMembers = function() {
         originalGameEventInitMembers.call(this);
         this._health = this._eventType === "aliado" ? 50 : 100;
         this._eventTypeChecked = false;
+        this._waitCount = TIEMPO_ESPERA;
         this._originalX = this.x;
         this._originalY = this.y;
     };
 
-    // Configuración del evento
     const originalGameEventSetup = Game_Event.prototype.setup;
     Game_Event.prototype.setup = function(eventId) {
         originalGameEventSetup.call(this, eventId);
@@ -33,7 +33,6 @@
         this._originalY = this.event().y;
     };
 
-    // Obtención del tipo de evento
     Game_Event.prototype.getEventType = function() {
         const eventData = this.event();
         if (!eventData) return null;
@@ -47,7 +46,6 @@
         return null;
     };
 
-    // Actualización del evento
     const originalGameEventUpdate = Game_Event.prototype.update;
     Game_Event.prototype.update = function() {
         originalGameEventUpdate.call(this);
@@ -56,11 +54,15 @@
             this._eventTypeChecked = true;
         }
         if (this._eventType === "enemigo" || this._eventType === "aliado") {
-            this.comportamientoEvento();
+            if (this._waitCount > 0) {
+                this._waitCount--;
+            } else {
+                this.comportamientoEvento();
+                this._waitCount = TIEMPO_ESPERA;
+            }
         }
     };
 
-    // Comportamiento del evento
     Game_Event.prototype.comportamientoEvento = function() {
         const distanciaAlJugador = $gamePlayer.distanceTo(this);
         if (this._eventType === "enemigo" && distanciaAlJugador <= DISTANCIA_DE_ATAQUE) {
@@ -72,7 +74,6 @@
         }
     };
 
-    // Implementación de las funciones adicionales
     Game_Event.prototype.atacarJugador = function() {
         $gameActors.actor(1).setHp($gameActors.actor(1).hp - ENEMY_DAMAGE);
         console.log("El enemigo ataca al jugador!");
@@ -97,4 +98,34 @@
             this.setDestination(this._originalX, this._originalY);
         }
     };
+
+        // Implementar lógica para el combate entre aliados y enemigos
+    Game_Event.prototype.combatirSiEsNecesario = function() {
+        const enemigosCercanos = this.encontrarEnemigosCercanos();
+        enemigosCercanos.forEach(enemigo => {
+            enemigo._health -= ENEMY_DAMAGE;
+            if (enemigo._health <= 0) {
+                enemigo.eliminar();
+            }
+        });
+    };
+
+    // Encuentra enemigos cercanos para el combate
+    Game_Event.prototype.encontrarEnemigosCercanos = function() {
+        return $gameMap.events().filter(evento => {
+            const esEnemigo = evento._eventType === 'enemigo';
+            const esAliado = this._eventType === 'aliado';
+            const distancia = this.distanceTo(evento);
+            return esEnemigo && esAliado && distancia <= DISTANCIA_DE_ATAQUE;
+        });
+    };
+
+    // Eliminar el evento (enemigo o aliado) si la salud es cero
+    Game_Event.prototype.eliminar = function() {
+        this.erase(); // Borra el evento del mapa
+        console.log("Evento eliminado: " + this.event().name);
+    };
+
+    // Resto del código necesario para el plugin...
+    // Puedes agregar cualquier otra lógica o funcionalidad adicional necesaria
 })();
