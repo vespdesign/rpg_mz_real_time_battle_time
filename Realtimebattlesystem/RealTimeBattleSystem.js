@@ -99,32 +99,32 @@
         }
     };
 
-        // Implementar lógica para el combate entre aliados y enemigos
-    Game_Event.prototype.combatirSiEsNecesario = function() {
-        const enemigosCercanos = this.encontrarEnemigosCercanos();
-        enemigosCercanos.forEach(enemigo => {
-            enemigo._health -= ENEMY_DAMAGE;
-            if (enemigo._health <= 0) {
-                enemigo.eliminar();
-            }
-        });
-    };
+    // Llama esta función en el flujo principal para que los aliados y enemigos combatan
+Game_Event.prototype.combatirSiEsNecesario = function() {
+    const enemigosCercanos = this.encontrarEnemigosCercanos();
+    enemigosCercanos.forEach(enemigo => {
+        enemigo._health -= ENEMY_DAMAGE;
+        if (enemigo._health <= 0) {
+            enemigo.eliminar();
+        }
+    });
+};
 
-    // Encuentra enemigos cercanos para el combate
-    Game_Event.prototype.encontrarEnemigosCercanos = function() {
-        return $gameMap.events().filter(evento => {
-            const esEnemigo = evento._eventType === 'enemigo';
-            const esAliado = this._eventType === 'aliado';
-            const distancia = this.distanceTo(evento);
-            return esEnemigo && esAliado && distancia <= DISTANCIA_DE_ATAQUE;
-        });
-    };
+// Encuentra enemigos cercanos para el combate
+Game_Event.prototype.encontrarEnemigosCercanos = function() {
+    return $gameMap.events().filter(evento => {
+        const esEnemigo = evento._eventType === 'enemigo' && this._eventType === 'aliado';
+        const esAliado = evento._eventType === 'aliado' && this._eventType === 'enemigo';
+        const distancia = this.distanceTo(evento);
+        return (esEnemigo || esAliado) && distancia <= DISTANCIA_DE_ATAQUE;
+    });
+};
 
-    // Eliminar el evento (enemigo o aliado) si la salud es cero
-    Game_Event.prototype.eliminar = function() {
-        this.erase(); // Borra el evento del mapa
-        console.log("Evento eliminado: " + this.event().name);
-    };
+// Eliminar el evento (enemigo o aliado) si la salud es cero
+Game_Event.prototype.eliminar = function() {
+    this.erase(); // Borra el evento del mapa
+    console.log("Evento eliminado: " + this.event().name);
+};
 
     // Resto del código necesario para el plugin...
     // Puedes agregar cualquier otra lógica o funcionalidad adicional necesaria
